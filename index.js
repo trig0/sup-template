@@ -22,8 +22,15 @@ app.get('/users', function(req, res) {
 });
 
 app.post('/users', function(req, res){
-    console.log('username: ' + User.username);
-    User.create(function(err, username){
+    // var user = new User({
+    //     username: 'chris'
+    // });
+    //console.log(user.username);
+    console.log('carlo', req.body);
+    console.log(req.params);
+
+    User.create({username: req.body.username}, function(err, username){
+
         if (err) {
             return res.status(500).json({
                 message: 'Internal Server Error'
@@ -34,11 +41,7 @@ app.post('/users', function(req, res){
             mongoose.disconnect();
             return;
         }
-        if (typeof username !== 'String') {
-            console.error("User must be text", username);
-            mongoose.disconnect();
-            return;
-        }
+        
         res.status(201).json(users);
     });
 });
