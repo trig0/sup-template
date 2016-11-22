@@ -8,6 +8,8 @@ var jsonParser = bodyParser.json();
 
 var User = require('./models/user');
 
+
+
 // Add your API endpoints here
 
 app.get('/users', function(req, res) {
@@ -21,7 +23,8 @@ app.get('/users', function(req, res) {
     });
 });
 
-app.post('/users', function(req, res){
+app.post('/users', jsonParser, function(req, res){
+
     // var user = new User({
     //     username: 'chris'
     // });
@@ -29,20 +32,21 @@ app.post('/users', function(req, res){
     console.log('carlo', req.body);
     console.log(req.params);
 
-    User.create({username: req.body.username}, function(err, username){
+    User.create({username: req.body.username}, function(err, user){
 
         if (err) {
             return res.status(500).json({
                 message: 'Internal Server Error'
             });
         }
-        if (!username) {
-            console.error("No User", username);
+        if (!user) {
+            console.error("No User", user);
             mongoose.disconnect();
             return;
         }
         
-        res.status(201).json(users);
+        res.status(201).location('/users/' + user._id).json({});
+
     });
 });
 
