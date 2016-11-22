@@ -4,7 +4,7 @@
   "description": "A messaging API",
   "main": "index.js",
   "directories": {
-    "test": "tests"
+    "test": "test"
   },
   "scripts": {
     "start": "node index.js",
@@ -25,5 +25,13 @@
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
     "mongoose": "^4.4.13"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carlo-jesena/sup-template.git"
+  },
+  "bugs": {
+    "url": "https://github.com/carlo-jesena/sup-template/issues"
+  },
+  "homepage": "https://github.com/carlo-jesena/sup-template#readme"
 }

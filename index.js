@@ -6,10 +6,23 @@ var app = express();
 
 var jsonParser = bodyParser.json();
 
+var User = require('./models/user');
+
 // Add your API endpoints here
 
+app.get('/users', function(req, res) {
+    User.find(function(err, users){
+        if (err) {
+            return res.status(500).json({
+                message: 'Internal Server Error'
+            });
+        }
+        res.status(200).json(users);
+    });
+});
+
 var runServer = function(callback) {
-    var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://localhost/sup';
+    var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://demo:demo@ds159497.mlab.com:59497/mlab';
     mongoose.connect(databaseUri).then(function() {
         var port = process.env.PORT || 8080;
         var server = app.listen(port, function() {
