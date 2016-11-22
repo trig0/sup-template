@@ -24,31 +24,31 @@ app.get('/users', function(req, res) {
 });
 
 app.post('/users', jsonParser, function(req, res){
+  
+        if (!req.body.username) {
+            return res.status(422).json({
+            message: 'Missing field: username'});
+        }
+        else if (typeof req.body.username !== 'string') {
+            return res.status(422).json({
+            message: 'Incorrect field type: username'});
+        };
 
-    // var user = new User({
-    //     username: 'chris'
-    // });
-    //console.log(user.username);
-    console.log('carlo', req.body);
-    console.log(req.params);
-
+ 
     User.create({username: req.body.username}, function(err, user){
 
         if (err) {
-            return res.status(500).json({
-                message: 'Internal Server Error'
-            });
-        }
-        if (!user) {
-            console.error("No User", user);
-            mongoose.disconnect();
-            return;
-        }
-        
-        res.status(201).location('/users/' + user._id).json({});
+            console.error('You have created an error');
 
-    });
+        }
+
+        res.status(201).location('/users/' + user._id).json({});
+        });
 });
+
+// app.put('/items:username', function(req, res) {
+
+// }
 
 var runServer = function(callback) {
     var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://demo:demo@ds159497.mlab.com:59497/mlab';
