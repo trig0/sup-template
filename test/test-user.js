@@ -66,7 +66,7 @@ describe('User endpoints', function() {
                     });
             });
         });
-        xdescribe('POST', function() {
+        describe('POST', function() {
             it('should allow adding a user', function() {
                 var user = {
                     username: 'joe'

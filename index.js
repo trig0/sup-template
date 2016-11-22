@@ -21,6 +21,28 @@ app.get('/users', function(req, res) {
     });
 });
 
+app.post('/users', function(req, res){
+    console.log('username: ' + User.username);
+    User.create(function(err, username){
+        if (err) {
+            return res.status(500).json({
+                message: 'Internal Server Error'
+            });
+        }
+        if (!username) {
+            console.error("No User", username);
+            mongoose.disconnect();
+            return;
+        }
+        if (typeof username !== 'String') {
+            console.error("User must be text", username);
+            mongoose.disconnect();
+            return;
+        }
+        res.status(201).json(users);
+    });
+});
+
 var runServer = function(callback) {
     var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://demo:demo@ds159497.mlab.com:59497/mlab';
     mongoose.connect(databaseUri).then(function() {
