@@ -1,4 +1,4 @@
-global.databaseUri = 'mongodb://demo:demo@ds159497.mlab.com:59497/mlab';
+global.databaseUri = 'mongodb://hunter:cod1ng!@ds163377.mlab.com:63377/sup';
 
 var chai = require('chai');
 var chaiHttp = require('chai-http');
