@@ -133,7 +133,7 @@ app.delete('/users/:userId', jsonParser, function(req, res) {
 //messages endpoints here
 
 app.get ('/messages', function(req, res) {
-    Message.find(req.query) 
+    Message.find(req.query)
     .populate('from')
     .populate('to')
     .then(function(messages){
@@ -144,6 +144,16 @@ app.get ('/messages', function(req, res) {
         // console.log(req.query);
         });
     });
+
+app.post('/messages', jsonParser, function(req, res){
+  // create a message
+  console.log(req.body.message);
+  Message.create({
+    message: req.body.message
+  }).then(function(message){
+    res.status(201).location('/messages/').json({});
+  });
+});
 
 
 var runServer = function(callback) {
@@ -161,7 +171,7 @@ var runServer = function(callback) {
 
 if (require.main === module) {
     runServer();
-};
+}
 
 exports.app = app;
 exports.runServer = runServer;

@@ -49,7 +49,7 @@ describe('Message endpoints', function() {
     });
 
     describe('/messages', function() {
-        describe.only('GET', function() {
+        describe('GET', function() {
             it('should return an empty list of messages initially', function() {
                 // Get the list of messages
                 return chai.request(app)
@@ -343,7 +343,7 @@ describe('Message endpoints', function() {
             });
         });
         describe('POST', function() {
-            it('should allow adding a message', function() {
+            it.only('should allow adding a message', function() {
                 var message = {
                     from: this.alice._id,
                     to: this.bob._id,
@@ -550,7 +550,7 @@ describe('Message endpoints', function() {
     });
 
     describe('/messages/:messageId', function() {
-        describe('GET', function() {
+        describe.only('GET', function() {
             it('should 404 on non-existent messages', function() {
                 var spy = makeSpy();
                 // Get a message which doesn't exist
