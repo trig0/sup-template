@@ -68,9 +68,29 @@ app.get('/users/:userId', jsonParser, function(req, res){
     
 });
 
-// app.put('/items:username', function(req, res) {
+// app.put('/users', function(req, res) {
 
 // }
+
+app.delete('/users/:userId', jsonParser, function(req, res){
+
+    User.findOneAndRemove({_id: req.params.userId}).then(
+        function(user){
+            if(!user) {
+                 res.status(404).json({
+                    message: 'User not found'
+                });
+                 return;
+            }
+            // console.log(User._id;
+         res.status(200).json({});    
+  
+    }).catch(function(err) {
+                 res.status(500).send({
+                    message: 'Internal Server Error'
+                });
+    });
+});
 
 var runServer = function(callback) {
     var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://demo:demo@ds159497.mlab.com:59497/mlab';

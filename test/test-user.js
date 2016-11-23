@@ -152,7 +152,7 @@ describe('User endpoints', function() {
     });
 
     describe('/users/:userId', function() {
-        describe.only('GET', function() {
+        describe('GET', function() {
             it('should 404 on non-existent users', function() {
                 var spy = makeSpy();
                 // Request a non-existent user
@@ -335,7 +335,7 @@ describe('User endpoints', function() {
             });
         });
 
-        describe('DELETE', function() {
+        describe.only('DELETE', function() {
             it('should 404 on non-existent users', function() {
                 var spy = makeSpy();
                 // Try to delete a non-existent user
