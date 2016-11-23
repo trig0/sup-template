@@ -54,18 +54,17 @@ app.get('/users/:userId', jsonParser, function(req, res) {
 
     User.findOne({
         _id: req.params.userId
-    }).then(
-        function(user) {
-            if (!user) {
-                res.status(404).send({
-                    message: 'User not found'
-                });
-                return;
-            }
-            // console.log(User._id;
-            res.status(200).json(user);
+    }).then(function(user) {
+        if (!user) {
+            res.status(404).send({
+                message: 'User not found'
+            });
+            return;
+        }
+        // console.log(User._id;
+        res.status(200).json(user);
 
-        }).catch(function(err) {
+    }).catch(function(err) {
         res.status(500).send({
             message: 'Internal Server Error'
         });
@@ -132,29 +131,68 @@ app.delete('/users/:userId', jsonParser, function(req, res) {
 
 //messages endpoints here
 
-app.get ('/messages', function(req, res) {
+app.get('/messages', function(req, res) {
     Message.find(req.query)
-    .populate('from')
-    .populate('to')
-    .then(function(messages){
-        // if (err) {
-        //     res.status(500).json(messages);
-        // }
-        res.status(200).json(messages);
-        // console.log(req.query);
+        .populate('from')
+        .populate('to')
+        .then(function(messages) {
+            // if (err) {
+            //     res.status(500).json(messages);
+            // }
+            res.status(200).json(messages);
+            // console.log(req.query);
         });
-    });
-
-app.post('/messages', jsonParser, function(req, res){
-  // create a message
-  console.log(req.body.message);
-  Message.create({
-    message: req.body.message
-  }).then(function(message){
-    res.status(201).location('/messages/').json({});
-  });
 });
 
+app.post('/messages', jsonParser, function(req, res) {
+    // create a message
+    // console.log(req.body);
+    if (!req.body.text) {
+        return res.status(422).send({
+            message: 'Missing field: text'
+        });
+    }
+    if (typeof req.body.text !== 'string') {
+        return res.status(422).send({
+            message: 'Incorrect field type: text'
+        });
+    }
+    if (typeof req.body.to !== 'string') {
+        return res.status(422).send({
+            message: 'Incorrect field type: to'
+        });
+    }
+    if (typeof req.body.from !== 'string') {
+        return res.status(422).send({
+            message: 'Incorrect field type: from'
+        });
+    }
+    // User.findOne(req.body.from) {
+    
+    // }
+    //     .then(function(user){
+    //         console.log(user);
+    //     });
+    //     console.log(req.body.from);
+    //     return res.status(422).send({
+    //         message: 'Incorrect field value: from'
+    //     });   
+    Message.create(req.body).then(function(message) {
+        res.status(201).location('/messages/' + message._id).json({});
+    });
+});
+
+// app.get('messages/:messageId', jsonParser, function(req, res) {
+
+//     Message.findOne({text: req.params.text
+//     }).then(function(message) {
+//         res.status(201).json(message)
+//     }.catch(function(err) {
+//         res.status(404).send({
+//             message: 'Message not found'
+//         });
+//     }));
+// });
 
 var runServer = function(callback) {
     var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://demo:demo@ds159497.mlab.com:59497/mlab';
