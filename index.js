@@ -8,7 +8,7 @@ var jsonParser = bodyParser.json();
 
 var User = require('./models/user');
 
-
+var Message = require('./models/message');
 
 // Add your API endpoints here
 
@@ -129,6 +129,22 @@ app.delete('/users/:userId', jsonParser, function(req, res) {
         });
     });
 });
+
+//messages endpoints here
+
+app.get ('/messages', function(req, res) {
+    Message.find(req.query) 
+    .populate('from')
+    .populate('to')
+    .then(function(messages){
+        // if (err) {
+        //     res.status(500).json(messages);
+        // }
+        res.status(200).json(messages);
+        // console.log(req.query);
+        });
+    });
+
 
 var runServer = function(callback) {
     var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://demo:demo@ds159497.mlab.com:59497/mlab';

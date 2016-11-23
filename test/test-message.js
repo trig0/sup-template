@@ -49,8 +49,8 @@ describe('Message endpoints', function() {
     });
 
     describe('/messages', function() {
-        describe('GET', function() {
-            it.only('should return an empty list of messages initially', function() {
+        describe.only('GET', function() {
+            it('should return an empty list of messages initially', function() {
                 // Get the list of messages
                 return chai.request(app)
                     .get(this.listPattern.stringify())
