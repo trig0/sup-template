@@ -8,10 +8,12 @@ var jsonParser = bodyParser.json();
 
 var User = require('./models/user');
 
+
+
 // Add your API endpoints here
 
 app.get('/users', function(req, res) {
-    User.find(function(err, users){
+    User.find(function(err, users) {
         if (err) {
             return res.status(500).json({
                 message: 'Internal Server Error'
@@ -21,25 +23,110 @@ app.get('/users', function(req, res) {
     });
 });
 
-app.post('/users', function(req, res){
-    console.log('username: ' + User.username);
-    User.create(function(err, username){
+app.post('/users', jsonParser, function(req, res) {
+
+    if (!req.body.username) {
+        return res.status(422).json({
+            message: 'Missing field: username'
+        });
+    } else if (typeof req.body.username !== 'string') {
+        return res.status(422).json({
+            message: 'Incorrect field type: username'
+        });
+    };
+
+
+    User.create({
+        username: req.body.username
+    }, function(err, user) {
+
         if (err) {
-            return res.status(500).json({
-                message: 'Internal Server Error'
-            });
+            console.error('You have created an error');
+
         }
-        if (!username) {
-            console.error("No User", username);
-            mongoose.disconnect();
-            return;
-        }
-        if (typeof username !== 'String') {
-            console.error("User must be text", username);
-            mongoose.disconnect();
-            return;
-        }
-        res.status(201).json(users);
+
+        res.status(201).location('/users/' + user._id).json({});
+    });
+});
+
+app.get('/users/:userId', jsonParser, function(req, res) {
+
+
+    User.findOne({
+        _id: req.params.userId
+    }).then(
+        function(user) {
+            if (!user) {
+                res.status(404).send({
+                    message: 'User not found'
+                });
+                return;
+            }
+            // console.log(User._id;
+            res.status(200).json(user);
+
+        }).catch(function(err) {
+        res.status(500).send({
+            message: 'Internal Server Error'
+        });
+    })
+
+});
+
+app.put('/users/:userId', jsonParser, function(req, res) {
+
+    if (!req.body) {
+        return res.status(400).json({
+            message: 'No request body'
+        });
+    }
+    if (!('username' in req.body)) {
+        return res.status(422).json({
+            message: 'Missing field: username'
+        });
+    }
+    if (typeof req.body.username !== 'string') {
+        return res.status(422).json({
+            message: 'Incorrect field type: username'
+        });
+    }
+
+    User.findOneAndUpdate({
+        _id: req.params.userId
+    }, {
+        username: req.body.username
+    }, {
+        upsert: true
+    }).then(function(user) {
+        res.status(200).json({});
+    }).catch(function(err) {
+        console.log(err);
+        res.status(500).send({
+            message: 'Internal Server Error'
+        });
+    });
+});
+
+
+app.delete('/users/:userId', jsonParser, function(req, res) {
+
+    User.findOneAndRemove({
+        _id: req.params.userId
+    }).then(
+        function(user) {
+            if (!user) {
+                res.status(404).json({
+                    message: 'User not found'
+                });
+                return;
+            }
+            // console.log(User._id);
+            res.status(200).json({});
+
+        }).catch(function(err) {
+        res.status(500).send({
+            message: 'Internal Server Error'
+        });
     });
 });
 
@@ -62,4 +149,3 @@ if (require.main === module) {
 
 exports.app = app;
 exports.runServer = runServer;
-

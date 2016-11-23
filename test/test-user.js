@@ -151,7 +151,7 @@ describe('User endpoints', function() {
         });
     });
 
-    xdescribe('/users/:userId', function() {
+    describe('/users/:userId', function() {
         describe('GET', function() {
             it('should 404 on non-existent users', function() {
                 var spy = makeSpy();
@@ -207,7 +207,7 @@ describe('User endpoints', function() {
             });
         });
 
-        xdescribe('PUT', function() {
+        describe('PUT', function() {
             it('should allow editing a user', function() {
                 var oldUser = {
                     username: 'joe'
@@ -335,7 +335,7 @@ describe('User endpoints', function() {
             });
         });
 
-        xdescribe('DELETE', function() {
+        describe('DELETE', function() {
             it('should 404 on non-existent users', function() {
                 var spy = makeSpy();
                 // Try to delete a non-existent user
