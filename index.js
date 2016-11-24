@@ -147,14 +147,47 @@ app.get ('/messages', function(req, res) {
 
 app.post('/messages', jsonParser, function(req, res){
   // create a message
-  console.log(req.body.message);
+  console.log('MESSAGE ->',req.body.text);
+
   Message.create({
-    message: req.body.message
+    from: req.body.from,
+    to: req.body.to,
+    text: req.body.text
   }).then(function(message){
-    res.status(201).location('/messages/').json({});
+    res.status(201).location('/messages/' + message.id).json({});
   });
 });
-
+//localhost:8080/messages/aaaaaa
+//params = {
+//  messageId: aaaaaa
+//}
+app.get('/messages/:messageId', function(req, res){
+  //console.log('MESSAGE ID ->', req.params.messageId);
+  Message.findById(req.params.messageId).then(function(message, err){
+    //console.log('MESSAGE ->',err, message);
+      if (message) {
+        User.findById(message.to).then(function(userTo){
+          User.findById(message.from).then(function(userFrom){
+            var response = {
+              text: message.text,
+              to: {
+                username: userTo.username
+              },
+              from: {
+                username: userFrom.username
+              }
+            };
+            //console.log('RESPONSE ->', response);
+            res.status(200).json(response);
+          });
+        });
+    } else {
+      res.status(404).json({
+        message: 'Message not found'
+      });
+    }
+  });
+});
 
 var runServer = function(callback) {
     var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://demo:demo@ds159497.mlab.com:59497/mlab';

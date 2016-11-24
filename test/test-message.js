@@ -350,6 +350,7 @@ describe('Message endpoints', function() {
                     text: 'Hi Bob'
                 };
                 // Add a message
+                console.log('LIST PATTERN ->', this.listPattern.stringify());
                 return chai.request(app)
                     .post(this.listPattern.stringify())
                     .send(message)
@@ -363,6 +364,7 @@ describe('Message endpoints', function() {
                         res.body.should.be.empty;
 
                         var params = this.singlePattern.match(res.headers.location);
+                        console.log('PARAMS ->', params);
                         // Fetch the message from the database, using the ID
                         // from the location header
                         return Message.findById(params.messageId).exec();
