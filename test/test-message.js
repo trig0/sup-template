@@ -342,8 +342,8 @@ describe('Message endpoints', function() {
                 }.bind(this));
             });
         });
-        describe('POST', function() {
-            it.only('should allow adding a message', function() {
+        describe.only('POST', function() {
+            it('should allow adding a message', function() {
                 var message = {
                     from: this.alice._id,
                     to: this.bob._id,
@@ -550,7 +550,7 @@ describe('Message endpoints', function() {
     });
 
     describe('/messages/:messageId', function() {
-        describe.only('GET', function() {
+        describe('GET', function() {
             it('should 404 on non-existent messages', function() {
                 var spy = makeSpy();
                 // Get a message which doesn't exist
