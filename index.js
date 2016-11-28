@@ -5,12 +5,41 @@ var mongoose = require('mongoose');
 var app = express();
 
 var jsonParser = bodyParser.json();
-
 var User = require('./models/user');
-
+var bcrypt = require('bcryptjs');
 var Message = require('./models/message');
 
+var passport = require('passport');
+var BasicStrategy = require('passport-http').BasicStrategy;
+
 // Add your API endpoints here
+
+var strategy = new BasicStrategy(function(username, password, callback){
+  User.findOne({
+    username: username
+  }, function (err, user) {
+    if (err) {
+      callback(err);
+      return;
+    }
+    if(!user) {
+      return callback(null, false, {
+        message: 'Incorrect username.'
+      });
+    }
+    user.validatePassword(password, function(err, isValid) {
+      if (err) {
+        return callback(null, false, {
+          message: 'Incorrect password.'
+        });
+      }
+      return callback(null, user);
+    });
+  });
+});
+
+passport.use(strategy);
+app.use(passport.initialize());
 
 app.get('/users', function(req, res) {
     User.find(function(err, users) {
@@ -25,6 +54,10 @@ app.get('/users', function(req, res) {
 
 app.post('/users', jsonParser, function(req, res) {
 
+  var username = req.body.username;
+  var password = req.body.password;
+
+
     if (!req.body.username) {
         return res.status(422).json({
             message: 'Missing field: username'
@@ -33,21 +66,50 @@ app.post('/users', jsonParser, function(req, res) {
         return res.status(422).json({
             message: 'Incorrect field type: username'
         });
-    };
+    }
 
-
-    User.create({
-        username: req.body.username
-    }, function(err, user) {
-
-        if (err) {
-            console.error('You have created an error');
-
-        }
-
-        res.status(201).location('/users/' + user._id).json({});
+bcrypt.genSalt(10, function(err, salt) {
+  if (err) {
+    return res.status(500).json({
+      message: 'Internal server error'
     });
+  }
+
+  bcrypt.hash(password, salt, function(err, hash) {
+    if (err) {
+      return res.status(500).json({
+        message: 'Internal server error'
+      });
+    }
+
+    var user = new User({
+      username: username,
+      password: hash
+    });
+
+    user.save(function(err) {
+      if (err) {
+        return res.status(500).json({
+          message: 'Internal server error'
+        });
+      }
+      return res.status(201).json({});
+    });
+  });
 });
+});
+//     User.create({
+//         username: req.body.username
+//     }, function(err, user) {
+//
+//         if (err) {
+//             console.error('You have created an error');
+//
+//         }
+//
+//         res.status(201).location('/users/' + user._id).json({});
+//     });
+
 
 app.get('/users/:userId', jsonParser, function(req, res) {
 
@@ -69,7 +131,7 @@ app.get('/users/:userId', jsonParser, function(req, res) {
         res.status(500).send({
             message: 'Internal Server Error'
         });
-    })
+    });
 
 });
 
