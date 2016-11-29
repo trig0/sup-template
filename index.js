@@ -167,24 +167,46 @@ app.put('/users/:userId', passport.authenticate('basic', {
                 message: 'Incorrect field type: username'
             });
         }
-        console.log(req.users);
-        console.log(req.params);
-        if (req.users._id === req.params.userId) {
-          User.findOneAndUpdate({
-              _id: req.params.userId
-          }, {
-              username: req.body.username
-          }, {
-              upsert: true
-          }).then(function(user) {
-              res.status(200).json({});
-          }).catch(function(err) {
-              console.log(err);
-              res.status(500).send({
-                  message: 'Internal Server Error'
-              });
-          });
+        console.log('req.user', req.user);
+        console.log('req.params',req.params);
+        if (!req.user._id.equals(req.params.userId)) {
+            return res.status(401).json({
+              message: 'Not authenticated'
+            });
         }
+        bcrypt.genSalt(10, function(err, salt) { // TODO: move to promises with bcrypt-as-promised library
+            if (err) {
+                return res.status(500).json({
+                    message: 'Internal server error'
+                });
+            }
+
+            bcrypt.hash(req.body.password, salt, function(err, hash) {
+                if (err) {
+                  // needs to happen here
+                    return res.status(500).json({
+                        message: 'Internal server error'
+                    });
+                }
+
+
+                User.findOneAndUpdate({
+                    _id: req.params.userId
+                }, {
+                    username: req.body.username,
+                    password: hash
+                }, {
+                    upsert: true
+                }).then(function(user) {
+                    res.status(200).json({});
+                }).catch(function(err) {
+                    console.log(err);
+                    res.status(500).send({
+                        message: 'Internal Server Error'
+                    });
+                });
+              });
+            });
       });
 
 //1) validate that the authenticated user's ID
