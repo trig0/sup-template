@@ -13,6 +13,8 @@ var passport = require('passport');
 var BasicStrategy = require('passport-http').BasicStrategy;
 
 // Add your API endpoints here
+// sidarth created separate state to give example of authentification
+// var state = { loggedIn: false, userId: "", username: "" };
 
 var strategy = new BasicStrategy(function(username, password, callback){
   User.findOne({
@@ -41,10 +43,17 @@ var strategy = new BasicStrategy(function(username, password, callback){
 passport.use(strategy);
 app.use(passport.initialize());
 
+// sidarth's example of authentification
+// app.get('/hidden', passport.authenticate('basic', {session: false}), function(req, res) {
+//     // state.loggedIn = true;
+//     res.json({
+//         message: 'Authenticated...'
+//     });
+// });
+
 
 app.get('/users',
-    passport.authenticate('basic', { session: false }), 
-    function(req, res) {
+    passport.authenticate('basic', { session: false }), function(req, res) {
     User.find(function(err, users) {
         console.log(users)
         if (err) {
@@ -115,7 +124,7 @@ app.post('/users', jsonParser, function(req, res) {
 //     });
 
 
-app.get('/users/:userId', jsonParser, function(req, res) {
+app.get('/users/:userId', passport.authenticate('basic', { session: false }), jsonParser, function(req, res) {
 
 
     User.findOne({
@@ -138,7 +147,7 @@ app.get('/users/:userId', jsonParser, function(req, res) {
 
 });
 
-app.put('/users/:userId', jsonParser, function(req, res) {
+app.put('/users/:userId', passport.authenticate('basic', { session: false }), jsonParser, function(req, res) {
 
     if (!req.body) {
         return res.status(400).json({
