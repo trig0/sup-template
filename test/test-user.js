@@ -1,4 +1,4 @@
-global.databaseUri = 'mongodb://hunter:cod1ng!@ds163377.mlab.com:63377/sup';
+global.databaseUri = 'mongodb://passport:passport@ds111798.mlab.com:11798/passportauthentication';
 
 var chai = require('chai');
 var chaiHttp = require('chai-http');
@@ -19,15 +19,27 @@ describe('User endpoints', function() {
         // Clear the database
         mongoose.connection.db.dropDatabase(done);
         this.singlePattern = new UrlPattern('/users/:userId');
-        this.listPattern = new UrlPattern('/users');
+        this.listPattern = new UrlPattern('/users')
     });
 
-    describe('/users', function() {
+    describe.only('/users', function() {
         describe('GET', function() {
-            it('should return an empty list of users initially', function() {
+            it.only('should return an empty list of users initially', function() {
                 // Get the list of users
+
+                var user = {
+                    username: 'casey',
+                    password: '1234'
+                }
+
                 return chai.request(app)
+                .post(this.listPattern.stringify())
+                .send(user)
+                .then(function(res){
+                    return chai.request(app)
                     .get(this.listPattern.stringify())
+                }.bind(this))
+                    // .get(this.listPattern.stringify())
                     .then(function(res) {
                         // Check that it's an empty array
                         res.should.have.status(200);
