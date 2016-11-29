@@ -19,40 +19,16 @@ describe('User endpoints', function() {
         // Clear the database
         mongoose.connection.db.dropDatabase(done);
         this.singlePattern = new UrlPattern('/users/:userId');
-        this.listPattern = new UrlPattern('/users')
+        this.listPattern = new UrlPattern('/users');
     });
 
-    describe.only('/users', function() {
+    describe('/users', function() {
         describe('GET', function() {
-            it.only('should return an empty list of users initially', function() {
-                // Get the list of users
 
+            it.only('should return a list of users', function() {
                 var user = {
-                    username: 'casey',
-                    password: '1234'
-                }
-
-                return chai.request(app)
-                .post(this.listPattern.stringify())
-                .send(user)
-                .then(function(res){
-                    return chai.request(app)
-                    .get(this.listPattern.stringify())
-                }.bind(this))
-                    // .get(this.listPattern.stringify())
-                    .then(function(res) {
-                        // Check that it's an empty array
-                        res.should.have.status(200);
-                        res.type.should.equal('application/json');
-                        res.charset.should.equal('utf-8');
-                        res.body.should.be.an('array');
-                        res.body.length.should.equal(0);
-                    });
-            });
-
-            it('should return a list of users', function() {
-                var user = {
-                    username: 'joe'
+                    username: 'joe',
+                    password: '$2a$10$0U50OlstzrbtO/frEt6g4OSXnYYTfRLL8oLTs5AWw2e60Ah.iIb1S'
                 };
 
                 // Create a user
@@ -60,7 +36,8 @@ describe('User endpoints', function() {
                     .then(function() {
                         // Get the list of users
                         return chai.request(app)
-                                   .get(this.listPattern.stringify());
+                                   .get(this.listPattern.stringify())
+                                   .auth('joe', 'roman');
                     }.bind(this))
                     .then(function(res) {
                         // Check that the array contains a user

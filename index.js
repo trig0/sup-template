@@ -28,7 +28,7 @@ var strategy = new BasicStrategy(function(username, password, callback) {
             });
         }
         user.validatePassword(password, function(err, isValid) {
-            if (err) {
+            if (!isValid) {
                 return callback(null, false, {
                     message: 'Incorrect password.'
                 });
