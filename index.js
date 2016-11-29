@@ -167,25 +167,30 @@ app.put('/users/:userId', passport.authenticate('basic', {
                 message: 'Incorrect field type: username'
             });
         }
+        console.log(req.users);
+        console.log(req.params);
+        if (req.users._id === req.params.userId) {
+          User.findOneAndUpdate({
+              _id: req.params.userId
+          }, {
+              username: req.body.username
+          }, {
+              upsert: true
+          }).then(function(user) {
+              res.status(200).json({});
+          }).catch(function(err) {
+              console.log(err);
+              res.status(500).send({
+                  message: 'Internal Server Error'
+              });
+          });
+        }
+      });
+
 //1) validate that the authenticated user's ID
 // req.user._id === req.params.userId
 // look up the http code
 // add bcrypt
-        User.findOneAndUpdate({
-            _id: req.params.userId
-        }, {
-            username: req.body.username
-        }, {
-            upsert: true
-        }).then(function(user) {
-            res.status(200).json({});
-        }).catch(function(err) {
-            console.log(err);
-            res.status(500).send({
-                message: 'Internal Server Error'
-            });
-        });
-    });
 
 
 app.delete('/users/:userId', passport.authenticate('basic', {
@@ -260,6 +265,7 @@ app.post('/messages', passport.authenticate('basic', {
             });
         }
 
+
         // User.findOne(req.body.from) {
 
         // }
@@ -273,24 +279,7 @@ app.post('/messages', passport.authenticate('basic', {
         Message.create(req.body).then(function(message) {
             res.status(201).location('/messages/' + message._id).json({});
         });
-<<<<<<< HEAD
-    }
-    // User.findOne(req.body.from) {
-
-    // }
-    //     .then(function(user){
-    //         console.log(user);
-    //     });
-    //     console.log(req.body.from);
-    //     return res.status(422).send({
-    //         message: 'Incorrect field value: from'
-    //     });
-    Message.create(req.body).then(function(message) {
-        res.status(201).location('/messages/' + message._id).json({});
-=======
->>>>>>> e1d0baeadb7738a04201eeeceda7a5c0fa7381d9
-    });
-
+});
 // app.get('messages/:messageId', jsonParser, function(req, res) {
 
 //     Message.findOne({text: req.params.text
