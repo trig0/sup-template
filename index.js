@@ -230,7 +230,7 @@ app.post('/messages', jsonParser, function(req, res) {
         });
     }
     // User.findOne(req.body.from) {
-    
+
     // }
     //     .then(function(user){
     //         console.log(user);
@@ -238,7 +238,7 @@ app.post('/messages', jsonParser, function(req, res) {
     //     console.log(req.body.from);
     //     return res.status(422).send({
     //         message: 'Incorrect field value: from'
-    //     });   
+    //     });
     Message.create(req.body).then(function(message) {
         res.status(201).location('/messages/' + message._id).json({});
     });
