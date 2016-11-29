@@ -43,10 +43,10 @@ app.use(passport.initialize());
 
 
 app.get('/users',
-    passport.authenticate('basic', { session: false }), 
+    passport.authenticate('basic', { session: false }),
     function(req, res) {
     User.find(function(err, users) {
-        console.log(users)
+        console.log(users);
         if (err) {
             return res.status(500).json({
                 message: 'Internal Server Error'
