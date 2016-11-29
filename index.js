@@ -41,8 +41,12 @@ var strategy = new BasicStrategy(function(username, password, callback){
 passport.use(strategy);
 app.use(passport.initialize());
 
-app.get('/users', function(req, res) {
+
+app.get('/users',
+    passport.authenticate('basic', { session: false }), 
+    function(req, res) {
     User.find(function(err, users) {
+        console.log(users)
         if (err) {
             return res.status(500).json({
                 message: 'Internal Server Error'
@@ -68,35 +72,35 @@ app.post('/users', jsonParser, function(req, res) {
         });
     }
 
-bcrypt.genSalt(10, function(err, salt) {
-  if (err) {
-    return res.status(500).json({
-      message: 'Internal server error'
-    });
-  }
-
-  bcrypt.hash(password, salt, function(err, hash) {
-    if (err) {
-      return res.status(500).json({
-        message: 'Internal server error'
-      });
-    }
-
-    var user = new User({
-      username: username,
-      password: hash
-    });
-
-    user.save(function(err) {
+    bcrypt.genSalt(10, function(err, salt) {
       if (err) {
         return res.status(500).json({
           message: 'Internal server error'
         });
       }
-      return res.status(201).json({});
+
+      bcrypt.hash(password, salt, function(err, hash) {
+        if (err) {
+          return res.status(500).json({
+            message: 'Internal server error'
+          });
+        }
+
+        var user = new User({
+          username: username,
+          password: hash
+        });
+
+        user.save(function(err) {
+          if (err) {
+            return res.status(500).json({
+              message: 'Internal server error'
+            });
+          }
+          return res.status(201).json({});
+        });
+      });
     });
-  });
-});
 });
 //     User.create({
 //         username: req.body.username
@@ -257,7 +261,7 @@ app.post('/messages', jsonParser, function(req, res) {
 // });
 
 var runServer = function(callback) {
-    var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://demo:demo@ds159497.mlab.com:59497/mlab';
+    var databaseUri = process.env.DATABASE_URI || global.databaseUri || 'mongodb://passport:passport@ds111798.mlab.com:11798/passportauthentication';
     mongoose.connect(databaseUri).then(function() {
         var port = process.env.PORT || 8080;
         var server = app.listen(port, function() {
