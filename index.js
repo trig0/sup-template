@@ -14,52 +14,57 @@ var BasicStrategy = require('passport-http').BasicStrategy;
 
 // Add your API endpoints here
 
-var strategy = new BasicStrategy(function(username, password, callback){
-  User.findOne({
-    username: username
-  }, function (err, user) {
-    if (err) {
-      callback(err);
-      return;
-    }
-    if(!user) {
-      return callback(null, false, {
-        message: 'Incorrect username.'
-      });
-    }
-    user.validatePassword(password, function(err, isValid) {
-      if (err) {
-        return callback(null, false, {
-          message: 'Incorrect password.'
+var strategy = new BasicStrategy(function(username, password, callback) {
+    User.findOne({
+        username: username
+    }, function(err, user) {
+        if (err) {
+            callback(err);
+            return;
+        }
+        if (!user) {
+            return callback(null, false, {
+                message: 'Incorrect username.'
+            });
+        }
+        user.validatePassword(password, function(err, isValid) {
+            if (err) {
+                return callback(null, false, {
+                    message: 'Incorrect password.'
+                });
+            }
+            return callback(null, user);
         });
-      }
-      return callback(null, user);
     });
-  });
 });
 
 passport.use(strategy);
 app.use(passport.initialize());
 
-
 app.get('/users',
-    passport.authenticate('basic', { session: false }),
+    passport.authenticate('basic', {
+        session: false
+    }),
     function(req, res) {
-    User.find(function(err, users) {
-        console.log(users);
-        if (err) {
-            return res.status(500).json({
-                message: 'Internal Server Error'
+        User.find().select('username')
+            .then(function(users) {
+                console.log(users);
+
+                res.status(200).json(users);
+            }).catch(function(err) {
+                console.log(err);
+
+                return res.status(500).json({
+                    message: 'Internal Server Error'
+                });
+
             });
-        }
-        res.status(200).json(users);
     });
-});
 
 app.post('/users', jsonParser, function(req, res) {
 
-  var username = req.body.username;
-  var password = req.body.password;
+    var username = req.body.username;
+    var password = req.body.password;
 
 
     if (!req.body.username) {
@@ -73,33 +78,33 @@ app.post('/users', jsonParser, function(req, res) {
     }
 
     bcrypt.genSalt(10, function(err, salt) {
-      if (err) {
-        return res.status(500).json({
-          message: 'Internal server error'
-        });
-      }
-
-      bcrypt.hash(password, salt, function(err, hash) {
         if (err) {
-          return res.status(500).json({
-            message: 'Internal server error'
-          });
+            return res.status(500).json({
+                message: 'Internal server error'
+            });
         }
 
-        var user = new User({
-          username: username,
-          password: hash
-        });
+        bcrypt.hash(password, salt, function(err, hash) {
+            if (err) {
+                return res.status(500).json({
+                    message: 'Internal server error'
+                });
+            }
 
-        user.save(function(err) {
-          if (err) {
-            return res.status(500).json({
-              message: 'Internal server error'
+            var user = new User({
+                username: username,
+                password: hash
             });
-          }
-          return res.status(201).json({});
+
+            user.save(function(err) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Internal server error'
+                    });
+                }
+                return res.status(201).json({});
+            });
         });
-      });
     });
 });
 //     User.create({
@@ -115,123 +120,160 @@ app.post('/users', jsonParser, function(req, res) {
 //     });
 
 
-app.get('/users/:userId', jsonParser, function(req, res) {
+app.get('/users/:userId', passport.authenticate('basic', {
+        session: false
+    }),
+    jsonParser,
+    function(req, res) {
 
-
-    User.findOne({
-        _id: req.params.userId
-    }).then(function(user) {
-        if (!user) {
-            res.status(404).send({
-                message: 'User not found'
-            });
-            return;
-        }
-        // console.log(User._id;
-        res.status(200).json(user);
-
-    }).catch(function(err) {
-        res.status(500).send({
-            message: 'Internal Server Error'
-        });
-    });
-
-});
-
-app.put('/users/:userId', jsonParser, function(req, res) {
-
-    if (!req.body) {
-        return res.status(400).json({
-            message: 'No request body'
-        });
-    }
-    if (!('username' in req.body)) {
-        return res.status(422).json({
-            message: 'Missing field: username'
-        });
-    }
-    if (typeof req.body.username !== 'string') {
-        return res.status(422).json({
-            message: 'Incorrect field type: username'
-        });
-    }
-
-    User.findOneAndUpdate({
-        _id: req.params.userId
-    }, {
-        username: req.body.username
-    }, {
-        upsert: true
-    }).then(function(user) {
-        res.status(200).json({});
-    }).catch(function(err) {
-        console.log(err);
-        res.status(500).send({
-            message: 'Internal Server Error'
-        });
-    });
-});
-
-
-app.delete('/users/:userId', jsonParser, function(req, res) {
-
-    User.findOneAndRemove({
-        _id: req.params.userId
-    }).then(
-        function(user) {
+        User.findOne({
+            _id: req.params.userId
+        }).then(function(user) {
             if (!user) {
-                res.status(404).json({
+                res.status(404).send({
                     message: 'User not found'
                 });
                 return;
             }
-            // console.log(User._id);
-            res.status(200).json({});
+            // console.log(User._id;
+            res.status(200).json(user);
 
         }).catch(function(err) {
-        res.status(500).send({
-            message: 'Internal Server Error'
+            res.status(500).send({
+                message: 'Internal Server Error'
+            });
+        });
+
+    });
+
+app.put('/users/:userId', passport.authenticate('basic', {
+        session: false
+    }),
+    jsonParser,
+    function(req, res) {
+
+        if (!req.body) {
+            return res.status(400).json({
+                message: 'No request body'
+            });
+        }
+        if (!('username' in req.body)) {
+            return res.status(422).json({
+                message: 'Missing field: username'
+            });
+        }
+        if (typeof req.body.username !== 'string') {
+            return res.status(422).json({
+                message: 'Incorrect field type: username'
+            });
+        }
+//1) validate that the authenticated user's ID
+// req.user._id === req.params.userId
+// look up the http code
+// add bcrypt
+        User.findOneAndUpdate({
+            _id: req.params.userId
+        }, {
+            username: req.body.username
+        }, {
+            upsert: true
+        }).then(function(user) {
+            res.status(200).json({});
+        }).catch(function(err) {
+            console.log(err);
+            res.status(500).send({
+                message: 'Internal Server Error'
+            });
         });
     });
-});
+
+
+app.delete('/users/:userId', passport.authenticate('basic', {
+        session: false
+    }),
+    jsonParser,
+    function(req, res) {
+
+        User.findOneAndRemove({
+            _id: req.params.userId
+        }).then(
+            function(user) {
+                if (!user) {
+                    res.status(404).json({
+                        message: 'User not found'
+                    });
+                    return;
+                }
+                // console.log(User._id);
+                res.status(200).json({});
+
+            }).catch(function(err) {
+            res.status(500).send({
+                message: 'Internal Server Error'
+            });
+        });
+    });
 
 //messages endpoints here
 
-app.get('/messages', function(req, res) {
-    Message.find(req.query)
-        .populate('from')
-        .populate('to')
-        .then(function(messages) {
-            // if (err) {
-            //     res.status(500).json(messages);
-            // }
-            res.status(200).json(messages);
-            // console.log(req.query);
-        });
-});
+app.get('/messages', passport.authenticate('basic', {
+        session: false
+    }),
+    function(req, res) {
+        Message.find(req.query)
+            .populate('from')
+            .populate('to')
+            .then(function(messages) {
+                // if (err) {
+                //     res.status(500).json(messages);
+                // }
+                res.status(200).json(messages);
+                // console.log(req.query);
+            });
+    });
 
-app.post('/messages', jsonParser, function(req, res) {
-    // create a message
-    // console.log(req.body);
-    if (!req.body.text) {
-        return res.status(422).send({
-            message: 'Missing field: text'
+app.post('/messages', passport.authenticate('basic', {
+        session: false
+    }),
+    jsonParser,
+    function(req, res) {
+        // create a message
+        // console.log(req.body);
+        if (!req.body.text) {
+            return res.status(422).send({
+                message: 'Missing field: text'
+            });
+        }
+        if (typeof req.body.text !== 'string') {
+            return res.status(422).send({
+                message: 'Incorrect field type: text'
+            });
+        }
+        if (typeof req.body.to !== 'string') {
+            return res.status(422).send({
+                message: 'Incorrect field type: to'
+            });
+        }
+        if (typeof req.body.from !== 'string') {
+            return res.status(422).send({
+                message: 'Incorrect field type: from'
+            });
+        }
+
+        // User.findOne(req.body.from) {
+
+        // }
+        //     .then(function(user){
+        //         console.log(user);
+        //     });
+        //     console.log(req.body.from);
+        //     return res.status(422).send({
+        //         message: 'Incorrect field value: from'
+        //     });
+        Message.create(req.body).then(function(message) {
+            res.status(201).location('/messages/' + message._id).json({});
         });
-    }
-    if (typeof req.body.text !== 'string') {
-        return res.status(422).send({
-            message: 'Incorrect field type: text'
-        });
-    }
-    if (typeof req.body.to !== 'string') {
-        return res.status(422).send({
-            message: 'Incorrect field type: to'
-        });
-    }
-    if (typeof req.body.from !== 'string') {
-        return res.status(422).send({
-            message: 'Incorrect field type: from'
-        });
+<<<<<<< HEAD
     }
     // User.findOne(req.body.from) {
 
@@ -245,8 +287,9 @@ app.post('/messages', jsonParser, function(req, res) {
     //     });
     Message.create(req.body).then(function(message) {
         res.status(201).location('/messages/' + message._id).json({});
+=======
+>>>>>>> e1d0baeadb7738a04201eeeceda7a5c0fa7381d9
     });
-});
 
 // app.get('messages/:messageId', jsonParser, function(req, res) {
 
